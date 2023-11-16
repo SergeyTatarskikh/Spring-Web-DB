@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>All dictionaries</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body>
+
+<table style="width: 100%">
+    <tr>
+        <td>
+            <button onclick="toggleList('list1')">Dictionary1</button>
+            <hr>
+
+            <div id="list1" style="display: none;">
+                <ul>
+                    <li th:each="dictionary : ${dictionaries}" th:if="${dictionary.getNumber() == 1}">
+                        <span class="key" th:text="${dictionary.getKey()}"></span>
+                        <span class="value" th:text="${dictionary.getValue()}"></span>
+                        <button onclick="deleteEntry(this)">Delete</button>
+                        <a th:href="@{/dictionaries/{key}/edit(key=${dictionary.getKey()})}"><input type="submit" value="Edit"></a>
+                    </li>
+                </ul>
+            </div>
+
+        </td>
+
+        <td>
+            <button onclick="toggleList('list2')">Dictionary2</button>
+            <hr>
+            <div id="list2" style="display: none;">
+                <ul>
+                    <li th:each="dictionary : ${dictionaries}" th:if="${dictionary.getNumber() != 1}">
+                        <span class="key" th:text="${dictionary.getKey()}"></span>
+                        <span class="value" th:text="${dictionary.getValue()}"></span>
+                        <button onclick="deleteEntry(this)">Delete</button>
+                        <a th:href="@{/dictionaries/{key}/edit(key=${dictionary.getKey()})}"><input type="submit" value="Edit"></a>
+                    </li>
+                </ul>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <form onsubmit="searchValue(event)">
+                <label for="searchKey">Search Key:</label>
+                <input type="text" id="searchKey" name="searchKey" required>
+                <label for="searchNumber">Search Number:</label>
+                <select id="searchNumber" name="searchNumber" required>
+                    <option value="1">Dictionary1</option>
+                    <option value="2">Dictionary2</option>
+                    <option value="3">All dictionaries</option>
+                </select>
+                <button type="submit">Search</button>
+            </form>
+            <p>Result Value: <span id="resultValue"></span></p>
+            <p>Result Number: <span id="resultNumber"></span></p>
+            <hr>
+        </td>
+    </tr>
+    <tr>
+        <td >
+            <form onsubmit="searchKey(event)">
+                <label for="value">Search value:</label>
+                <input type="text" id="value" name="value" required>
+                <label for="number">Search Number:</label>
+                <select id="number" name="number" required>
+                    <option value="1">Dictionary1</option>
+                    <option value="2">Dictionary2</option>
+                    <option value="3">All dictionaries</option>
+                </select>
+                <button type="submit">Search</button>
+            </form>
+            <p>Result Value: <span id="key"></span></p>
+            <p>Result Number: <span id="numberResult"></span></p>
+
+        </td>
+    </tr>
+</table>
+
+<hr>
+<a href="/dictionaries/create">Create new dictionary</a>
+
+<script>
+    function toggleList(listId) {
+        var list = document.getElementById(listId);
+        if (list.style.display === "none") {
+            list.style.display = "block";
+        } else {
+            list.style.display = "none";
+        }
+    }
+
+    function deleteEntry(button) {
+        var listItem = button.parentNode;
+        var key = listItem.querySelector('.key').textContent;
+
+        console.log(key);
+        // Perform AJAX request to delete the entry
+        // Example using jQuery:
+        $.ajax({
+            url: "/dictionaries/delete",
+            method: "POST",
+            data: { key: key},
+            success: function(response) {
+                // Handle success response
+                listItem.remove();
+            },
+            error: function(error) {
+                // Handle error response
+                console.log("Error deleting entry");
+            }
+        });
+    }
+
+    // Функция для выполнения поиска значения в словаре по ключу и номеру
+    function searchValue(event) {
+        event.preventDefault();
+        var searchKey = document.getElementById('searchKey1').value;
+        var searchNumber = document.getElementById('searchNumber').value;
+
+        console.log(searchNumber);
+        // Выполнение AJAX-запроса для поиска значения
+        // Пример с использованием jQuery:
+        $.ajax({
+            url: "/dictionaries/" + searchKey + "/" + searchNumber,
+            method: "GET",
+            success: function(response) {
+                if (response) {
+                    document.getElementById('resultValue').textContent = response;
+                    if(searchNumber === "3") {
+                        searchNumber = null;
+                    }
+
+                    document.getElementById('resultNumber').textContent = searchNumber;
+                } else {
+                    document.getElementById('resultValue').textContent = "Результат не найден";
+                }
+            },
+            error: function(error) {
+                console.log("Ошибка при поиске значения: " + error.responseText);
+                document.getElementById('resultValue').textContent = "Не найдено";
+            }
+        });
+    }
+
+    // Функция для выполнения поиска ключа в словаре по значению и номеру
+    function searchKey(event) {
+        event.preventDefault();
+        var searchValue = document.getElementById('value').value;
+        var searchNumber = document.getElementById('number').value;
+
+        console.log(searchValue);
+        console.log(searchNumber);
+
+        $.ajax({
+            url: "/dictionaries/searchKey",
+            method: "GET",
+            data: {
+                value: searchValue,
+                number: searchNumber
+            },
+            success: function(response) {
+                if (response) {
+                    document.getElementById('key').textContent = response;
+                    if(searchNumber === "3") {
+                        searchNumber = null;
+                    }
+
+                    document.getElementById('numberResult').textContent = searchNumber;
+                } else {
+                    document.getElementById('key').textContent = "Не найдено";
+                }
+            },
+            error: function(error) {
+                console.log("Ошибка: " + error.responseText);
+                document.getElementById('key').textContent = "Ошибка";
+                document.getElementById('numberResult').textContent = "";
+            }
+        });
+    }
+
+
+
+</script>
+
+
+</body>
+</html>

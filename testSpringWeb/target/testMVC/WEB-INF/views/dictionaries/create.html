@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>New item</title>
+</head>
+<body>
+<form th:method="POST" th:action="@{/dictionaries}" th:object="${dictionary}" onsubmit="return validateForm()">
+    <label for="number">Enter number dictionary: </label>
+    <input type="number" th:field="*{number}" id="number" min="1" max="2"/>
+    <br/>
+    <label for="key">Enter key: </label>
+    <input type="text" th:field="*{key}" id="key"/>
+    <br/>
+    <label for="value">Enter values separated by commas: </label>
+    <input type="text" th:field="*{value}" id="value"/>
+    <br/>
+    <input type="submit" value="Create">
+</form>
+
+<script>
+    function validateForm() {
+        var number = document.getElementById("number").value;
+        var value = document.getElementById("value").value;
+
+        if (number === "1") {
+            var values = value.split(",");
+            for (var i = 0; i < values.length; i++) {
+                var trimmedValue = values[i].trim();
+                if (trimmedValue.length !== 4 || !/^[a-zA-Z]+$/.test(trimmedValue)) {
+                    alert("Invalid value");
+                    return false;
+                }
+            }
+        }
+
+        if (number === "2") {
+            var values = value.split(",");
+            for (var i = 0; i < values.length; i++) {
+                var trimmedValue = values[i].trim();
+                if (trimmedValue.length !== 5 || !/^\d+$/.test(trimmedValue)) {
+                    alert("Invalid value");
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+</script>
+
+
+</body>
+</html>
